@@ -1,0 +1,176 @@
+import { ParameterType } from "jspsych";
+
+var _package = {
+  name: "@jspsych/extension-mouse-tracking",
+  version: "1.1.0",
+  description: "jsPsych extension for mouse tracking",
+  type: "module",
+  main: "dist/index.cjs",
+  exports: {
+    import: "./dist/index.js",
+    require: "./dist/index.cjs",
+  },
+  typings: "dist/index.d.ts",
+  unpkg: "dist/index.browser.min.js",
+  files: ["src", "dist"],
+  source: "src/index.ts",
+  scripts: {
+    test: "jest",
+    "test:watch": "npm test -- --watch",
+    tsc: "tsc",
+    build: "rollup --config",
+    "build:watch": "npm run build -- --watch",
+  },
+  repository: {
+    type: "git",
+    url: "git+https://github.com/jspsych/jsPsych.git",
+    directory: "packages/extension-mouse-tracking",
+  },
+  author: "Josh de Leeuw",
+  license: "MIT",
+  bugs: {
+    url: "https://github.com/jspsych/jsPsych/issues",
+  },
+  homepage: "https://www.jspsych.org/latest/extensions/mouse-tracking",
+  peerDependencies: {
+    jspsych: ">=7.0.0",
+  },
+  devDependencies: {
+    "@jspsych/config": "^3.0.0",
+    "@jspsych/test-utils": "^1.2.0",
+  },
+};
+
+class MouseTrackingExtension {
+  constructor(jsPsych) {
+    this.jsPsych = jsPsych;
+    this.initialize = async ({ minimum_sample_time = 0 }) => {
+      this.domObserver = new MutationObserver(this.mutationObserverCallback);
+      this.minimumSampleTime = minimum_sample_time;
+    };
+    this.on_start = (params) => {
+      params = params || {};
+      this.currentTrialData = [];
+      this.currentTrialTargets = /* @__PURE__ */ new Map();
+      this.currentTrialSelectors = params.targets || [];
+      this.lastSampleTime = null;
+      this.eventsToTrack = params.events || ["mousemove"];
+      this.domObserver.observe(this.jsPsych.getDisplayElement(), { childList: true });
+    };
+    this.on_load = () => {
+      this.currentTrialStartTime = performance.now();
+      if (this.eventsToTrack.includes("mousemove")) {
+        window.addEventListener("mousemove", this.mouseMoveEventHandler);
+      }
+      if (this.eventsToTrack.includes("mousedown")) {
+        window.addEventListener("mousedown", this.mouseDownEventHandler);
+      }
+      if (this.eventsToTrack.includes("mouseup")) {
+        window.addEventListener("mouseup", this.mouseUpEventHandler);
+      }
+    };
+    this.on_finish = () => {
+      this.domObserver.disconnect();
+      if (this.eventsToTrack.includes("mousemove")) {
+        window.removeEventListener("mousemove", this.mouseMoveEventHandler);
+      }
+      if (this.eventsToTrack.includes("mousedown")) {
+        window.removeEventListener("mousedown", this.mouseDownEventHandler);
+      }
+      if (this.eventsToTrack.includes("mouseup")) {
+        window.removeEventListener("mouseup", this.mouseUpEventHandler);
+      }
+      return {
+        mouse_tracking_data: this.currentTrialData,
+        mouse_tracking_targets: Object.fromEntries(this.currentTrialTargets.entries()),
+      };
+    };
+    this.mouseMoveEventHandler = ({ clientX: x, clientY: y }) => {
+      const event_time = performance.now();
+      const t = Math.round(event_time - this.currentTrialStartTime);
+      if (
+        this.lastSampleTime === null ||
+        event_time - this.lastSampleTime >= this.minimumSampleTime
+      ) {
+        this.lastSampleTime = event_time;
+        this.currentTrialData.push({ x, y, t, event: "mousemove" });
+      }
+    };
+    this.mouseUpEventHandler = ({ clientX: x, clientY: y }) => {
+      const event_time = performance.now();
+      const t = Math.round(event_time - this.currentTrialStartTime);
+      this.currentTrialData.push({ x, y, t, event: "mouseup" });
+    };
+    this.mouseDownEventHandler = ({ clientX: x, clientY: y }) => {
+      const event_time = performance.now();
+      const t = Math.round(event_time - this.currentTrialStartTime);
+      this.currentTrialData.push({ x, y, t, event: "mousedown" });
+    };
+    this.mutationObserverCallback = (mutationsList, observer) => {
+      for (const selector of this.currentTrialSelectors) {
+        if (!this.currentTrialTargets.has(selector)) {
+          const target = this.jsPsych.getDisplayElement().querySelector(selector);
+          if (target) {
+            this.currentTrialTargets.set(selector, target.getBoundingClientRect());
+          }
+        }
+      }
+    };
+  }
+}
+MouseTrackingExtension.info = {
+  name: "mouse-tracking",
+  version: _package.version,
+  data: {
+    mouse_tracking_data: {
+      type: ParameterType.COMPLEX,
+      array: true,
+      nested: {
+        x: {
+          type: ParameterType.INT,
+        },
+        y: {
+          type: ParameterType.INT,
+        },
+        t: {
+          type: ParameterType.INT,
+        },
+        event: {
+          type: ParameterType.STRING,
+        },
+      },
+    },
+    mouse_tracking_targets: {
+      type: ParameterType.COMPLEX,
+      nested: {
+        x: {
+          type: ParameterType.INT,
+        },
+        y: {
+          type: ParameterType.INT,
+        },
+        width: {
+          type: ParameterType.INT,
+        },
+        height: {
+          type: ParameterType.INT,
+        },
+        top: {
+          type: ParameterType.INT,
+        },
+        bottom: {
+          type: ParameterType.INT,
+        },
+        left: {
+          type: ParameterType.INT,
+        },
+        right: {
+          type: ParameterType.INT,
+        },
+      },
+    },
+  },
+};
+
+export { MouseTrackingExtension as default };
+//# sourceMappingURL=index.js.map
