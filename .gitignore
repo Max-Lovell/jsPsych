@@ -5,9 +5,7 @@ Thumbs.db
 /.project
 /.tern-project
 site/
-dist/
 coverage/
 .vscode/
-dist.zip
 packages/jspsych/README.md
 .turbo
