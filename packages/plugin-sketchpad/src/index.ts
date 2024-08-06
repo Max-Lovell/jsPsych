@@ -461,9 +461,9 @@ class SketchpadPlugin implements JsPsychPlugin<Info> {
       this.display.querySelector("#sketchpad-clear").addEventListener("click", this.clear);
     }
 
-    const color_btns = Array.prototype.slice.call(this.display.querySelectorAll(".sketchpad-color-select"));
-    for (const btn of color_btns) {
-      btn.addEventListener("click", (e) => {
+    const nodeList = this.display.querySelectorAll(".sketchpad-color-select");
+    for (let b = 0; b < nodeList.length; b++) {
+      nodeList[b].addEventListener("click", (e) => {
         const target = e.target as HTMLButtonElement;
         this.current_stroke_color = target.getAttribute("data-color");
       });
