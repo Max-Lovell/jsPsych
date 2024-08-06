@@ -170,12 +170,12 @@ var jsPsychMaxdiff = (function (jspsych) {
               n["checked"] = false;
             }
             if (trial.required) {
-              var left_checked = Array.from(document.getElementsByName("left")).some(
-                (c) => c.checked
-              );
-              var right_checked = Array.from(document.getElementsByName("right")).some(
-                (c) => c.checked
-              );
+              var left_checked = Array.prototype.slice
+                .call(document.getElementsByName("left"))
+                .some((c) => c.checked);
+              var right_checked = Array.prototype.slice
+                .call(document.getElementsByName("right"))
+                .some((c) => c.checked);
               if (left_checked && right_checked) {
                 document.getElementById("jspsych-maxdiff-next").disabled = false;
               } else {

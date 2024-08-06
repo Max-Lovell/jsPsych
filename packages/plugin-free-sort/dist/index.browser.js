@@ -323,7 +323,7 @@ var jsPsychFreeSort = (function (jspsych) {
       const inside = stimuli.map(() => trial.stim_starts_inside);
       const moves = [];
       let cur_in = false;
-      const draggables = Array.from(
+      const draggables = Array.prototype.slice.call(
         display_element.querySelectorAll(".jspsych-free-sort-draggable")
       );
       const border = display_element.querySelector("#jspsych-free-sort-border");
