@@ -67,7 +67,7 @@ describe("sketchpad", () => {
       },
     ]);
 
-    const display_content = Array.from(displayElement.children, (x) => {
+    const display_content = Array.prototype.slice.call(displayElement.children, (x) => {
       return (x as HTMLElement).id;
     });
 
@@ -88,7 +88,7 @@ describe("sketchpad", () => {
       },
     ]);
 
-    const display_content = Array.from(displayElement.children, (x) => {
+    const display_content = Array.prototype.slice.call(displayElement.children, (x) => {
       return (x as HTMLElement).id;
     });
 
@@ -113,7 +113,7 @@ describe("sketchpad", () => {
       },
     ]);
 
-    const display_content = Array.from(displayElement.children, (x) => {
+    const display_content = Array.prototype.slice.call(displayElement.children, (x) => {
       return (x as HTMLElement).id;
     });
 
